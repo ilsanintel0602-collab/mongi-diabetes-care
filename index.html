@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🐾 몽이 당뇨 케어</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&family=Fredoka:wght@600&display=swap');
+        
+        :root {
+            --primary: #9B59B6;
+            --primary-light: #F4ECF7;
+            --blood-color: #FF6BB3;
+            --blood-light: #FFE5F1;
+            --insulin-color: #9B59B6;
+            --insulin-light: #F4ECF7;
+            --food-color: #FF9F43;
+            --food-light: #FFF3E6;
+            --water-color: #3498DB;
+            --water-light: #E8F4FD;
+            --success: #4ECDC4;
+            --warning: #FFD93D;
+            --danger: #FF6B6B;
+            --bg: #FFF8FB;
+            --card-bg: #FFFFFF;
+            --text: #2C3E50;
+            --text-light: #7F8C8D;
+            --border: #F0E6EE;
+            --shadow: rgba(155, 89, 182, 0.15);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+            padding-bottom: 80px;
+        }
+        
+        .app-header {
+            background: linear-gradient(135deg, var(--primary) 0%, #B68FCB 100%);
+            color: white;
+            padding: 20px 20px 30px;
+            box-shadow: 0 4px 20px var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .app-title {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 24px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .family-selector {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+        }
+        
+        .family-selector option {
+            color: var(--text);
+        }
+        
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 12px 8px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        
+        .stat-label {
+            font-size: 11px;
+            opacity: 0.9;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            padding: 15px 20px 0;
+            background: var(--bg);
+            position: sticky;
+            top: 132px;
+            z-index: 99;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .nav-tabs::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .tab-btn {
+            background: white;
+            border: 2px solid var(--border);
+            color: var(--text-light);
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+        
+        .tab-btn[data-tab="blood"].active {
+            background: linear-gradient(135deg, var(--blood-color), #FF8FC7);
+            border-color: var(--blood-color);
+            box-shadow: 0 4px 12px rgba(255, 107, 179, 0.3);
+        }
+        
+        .tab-btn[data-tab="insulin"].active {
+            background: linear-gradient(135deg, var(--insulin-color), #B68FCB);
+            border-color: var(--insulin-color);
+            box-shadow: 0 4px 12px rgba(155, 89, 182, 0.3);
+        }
+        
+        .tab-btn[data-tab="food"].active {
+            background: linear-gradient(135deg, var(--food-color), #FFB366);
+            border-color: var(--food-color);
+            box-shadow: 0 4px 12px rgba(255, 159, 67, 0.3);
+        }
+        
+        .tab-btn[data-tab="water"].active {
+            background: linear-gradient(135deg, var(--water-color), #5DADE2);
+            border-color: var(--water-color);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+        }
+        
+        .content {
+            padding: 20px;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .card-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .chart-container {
+            height: 250px;
+            position: relative;
+            margin-top: 15px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background: white;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--primary-light);
+        }
+        
+        .number-input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .number-input-group .form-input {
+            flex: 1;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .btn-number {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            border: none;
+            background: var(--primary);
+            color: white;
+            font-size: 24px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-number:active {
+            transform: scale(0.95);
+        }
+        
+        .quick-value-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .btn-quick {
+            padding: 10px;
+            border: 2px solid var(--border);
+            background: white;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text);
+        }
+        
+        .btn-quick:active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), #B68FCB);
+            color: white;
+            box-shadow: 0 4px 15px var(--shadow);
+        }
+        
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+        
+        .record-item {
+            background: var(--bg);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .record-info {
+            flex: 1;
+        }
+        
+        .record-time {
+            font-size: 13px;
+            color: var(--text-light);
+            margin-bottom: 5px;
+        }
+        
+        .record-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+        }
+        
+        .record-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        .btn-edit {
+            background: var(--insulin-color);
+            color: white;
+        }
+        
+        .btn-delete {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .chart-period-btn {
+            padding: 6px 16px;
+            border: 2px solid var(--border);
+            background: white;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--text-light);
+        }
+        
+        .chart-period-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-light);
+        }
+        
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            width: 100%;
+            max-width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalIn 0.3s;
+        }
+        
+        @keyframes modalIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+            to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+        
+        @keyframes slideDown {
+            from { transform: translateX(-50%) translateY(0); opacity: 1; }
+            to { transform: translateX(-50%) translateY(20px); opacity: 0; }
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+        
+        .btn-close {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: var(--text-light);
+            padding: 0;
+            width: 32px;
+            height: 32px;
+        }
+        
+        .toggle-group {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .toggle-btn {
+            padding: 12px;
+            border: 2px solid var(--border);
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .toggle-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .blood-level {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        
+        .level-low {
+            background: #FFE5E5;
+            color: var(--danger);
+        }
+        
+        .level-normal {
+            background: #E5F9F7;
+            color: var(--success);
+        }
+        
+        .level-high {
+            background: #FFF9E5;
+            color: var(--warning);
+        }
+        
+        .family-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        
+        @media (max-width: 375px) {
+            .app-title {
+                font-size: 20px;
+            }
+            .stat-value {
+                font-size: 18px;
+            }
+        }
+        
+        @media (min-width: 768px) {
+            .content {
+                max-width: 600px;
+                margin: 0 auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-header">
+        <div class="header-top">
+            <div class="app-title">
+                🐾 몽이 당뇨 케어
+            </div>
+            <select class="family-selector" id="familySelector">
+                <option value="all">전체 보기</option>
+                <option value="엄마">엄마</option>
+                <option value="아빠">아빠</option>
+                <option value="딸">딸</option>
+            </select>
+        </div>
+        <div class="quick-stats">
+            <div class="stat-card">
+                <div class="stat-value" id="todayAvgBlood">-</div>
+                <div class="stat-label">오늘 평균 혈당</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="todayInsulin">-</div>
+                <div class="stat-label">오늘 인슐린</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="todayRecords">0</div>
+                <div class="stat-label">오늘 기록</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="nav-tabs">
+        <button class="tab-btn active" data-tab="dashboard">📊 대시보드</button>
+        <button class="tab-btn" data-tab="blood">💉 혈당</button>
+        <button class="tab-btn" data-tab="insulin">💊 인슐린</button>
+        <button class="tab-btn" data-tab="food">🍖 사료</button>
+        <button class="tab-btn" data-tab="water">💧 물</button>
+    </div>
+
+    <div class="content">
+        <!-- 대시보드 -->
+        <div class="tab-content active" id="dashboard">
+            <div class="card">
+                <div class="card-title">
+                    📈 혈당 추이
+                    <div style="margin-left: auto; display: flex; gap: 8px;">
+                        <button class="chart-period-btn active" data-period="7" onclick="changeChartPeriod(7)">7일</button>
+                        <button class="chart-period-btn" data-period="30" onclick="changeChartPeriod(30)">한달</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="bloodChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">📋 오늘의 기록</div>
+                <div id="todayRecordsList"></div>
+            </div>
+        </div>
+
+        <!-- 혈당 -->
+        <div class="tab-content" id="blood">
+            <div class="card">
+                <button class="btn btn-primary" onclick="openModal('blood')">
+                    ➕ 혈당 기록 추가
+                </button>
+            </div>
+            <div id="bloodRecordsList"></div>
+        </div>
+
+        <!-- 인슐린 -->
+        <div class="tab-content" id="insulin">
+            <div class="card">
+                <button class="btn btn-primary" onclick="openModal('insulin')">
+                    ➕ 인슐린 기록 추가
+                </button>
+            </div>
+            <div id="insulinRecordsList"></div>
+        </div>
+
+        <!-- 사료 -->
+        <div class="tab-content" id="food">
+            <div class="card">
+                <button class="btn btn-primary" onclick="openModal('food')">
+                    ➕ 사료 기록 추가
+                </button>
+            </div>
+            <div id="foodRecordsList"></div>
+        </div>
+
+        <!-- 물 -->
+        <div class="tab-content" id="water">
+            <div class="card">
+                <button class="btn btn-primary" onclick="openModal('water')">
+                    ➕ 물 섭취 기록 추가
+                </button>
+            </div>
+            <div id="waterRecordsList"></div>
+        </div>
+    </div>
+
+    <!-- 모달 -->
+    <div class="modal" id="recordModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">기록 추가</h3>
+                <button class="btn-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div id="recordFormContainer">
+                <input type="hidden" id="recordType">
+                <input type="hidden" id="editId">
+                
+                <div class="form-group">
+                    <label class="form-label">날짜</label>
+                    <input type="date" class="form-input" id="recordDate" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">시간</label>
+                    <input type="time" class="form-input" id="recordTime" required>
+                </div>
+                
+                <div class="form-group" id="bloodValueGroup" style="display: none;">
+                    <label class="form-label">혈당 수치 (mg/dL)</label>
+                    <div class="number-input-group">
+                        <button type="button" class="btn-number" onclick="decreaseValue('bloodValue', 10)">-</button>
+                        <input type="number" class="form-input" id="bloodValue" min="0" step="1" value="100">
+                        <button type="button" class="btn-number" onclick="increaseValue('bloodValue', 10)">+</button>
+                    </div>
+                    <div class="quick-value-buttons">
+                        <button type="button" class="btn-quick" onclick="setQuickValue('bloodValue', 100)">100</button>
+                        <button type="button" class="btn-quick" onclick="setQuickValue('bloodValue', 150)">150</button>
+                        <button type="button" class="btn-quick" onclick="setQuickValue('bloodValue', 200)">200</button>
+                        <button type="button" class="btn-quick" onclick="setQuickValue('bloodValue', 300)">300</button>
+                    </div>
+                </div>
+                
+                <div class="form-group" id="insulinValueGroup" style="display: none;">
+                    <label class="form-label">인슐린 용량 (단위)</label>
+                    <div class="number-input-group">
+                        <button type="button" class="btn-number" onclick="decreaseValue('insulinValue', 1)">-</button>
+                        <input type="number" class="form-input" id="insulinValue" min="0" step="1" value="7">
+                        <button type="button" class="btn-number" onclick="increaseValue('insulinValue', 1)">+</button>
+                    </div>
+                    <div class="quick-value-buttons">
+                        <button type="button" class="btn-quick" onclick="setQuickValue('insulinValue', 7)">7</button>
+                        <button type="button" class="btn-quick" onclick="setQuickValue('insulinValue', 8)">8</button>
+                        <button type="button" class="btn-quick" onclick="setQuickValue('insulinValue', 9)">9</button>
+                        <button type="button" class="btn-quick" onclick="setQuickValue('insulinValue', 10)">10</button>
+                    </div>
+                </div>
+                
+                <div class="form-group" id="foodValueGroup" style="display: none;">
+                    <label class="form-label">사료 급여량 (g)</label>
+                    <div class="number-input-group">
+                        <button type="button" class="btn-number" onclick="decreaseValue('foodValue', 10)">-</button>
+                        <input type="number" class="form-input" id="foodValue" min="0" step="10" value="100">
+                        <button type="button" class="btn-number" onclick="increaseValue('foodValue', 10)">+</button>
+                    </div>
+                    <div class="quick-value-buttons">
+                        <button type="button" class="btn-quick" onclick="setQuickValue('foodValue', 100)">100g</button>
+                        <button type="button" class="btn-quick" onclick="setQuickValue('foodValue', 150)">150g</button>
+                        <button type="button" class="btn-quick" onclick="setQuickValue('foodValue', 200)">200g</button>
+                        <button type="button" class="btn-quick" onclick="setQuickValue('foodValue', 300)">300g</button>
+                    </div>
+                </div>
+                
+                <div class="form-group" id="waterValueGroup" style="display: none;">
+                    <label class="form-label">물 섭취량 (ml)</label>
+                    <div class="number-input-group">
+                        <button type="button" class="btn-number" onclick="decreaseValue('waterValue', 50)">-</button>
+                        <input type="number" class="form-input" id="waterValue" min="0" step="50" value="200">
+                        <button type="button" class="btn-number" onclick="increaseValue('waterValue', 50)">+</button>
+                    </div>
+                    <div class="quick-value-buttons">
+                        <button type="button" class="btn-quick" onclick="setQuickValue('waterValue', 100)">100ml</button>
+                        <button type="button" class="btn-quick" onclick="setQuickValue('waterValue', 200)">200ml</button>
+                        <button type="button" class="btn-quick" onclick="setQuickValue('waterValue', 300)">300ml</button>
+                        <button type="button" class="btn-quick" onclick="setQuickValue('waterValue', 500)">500ml</button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">기록자</label>
+                    <div class="toggle-group">
+                        <button type="button" class="toggle-btn" onclick="selectRecorder('엄마')">엄마</button>
+                        <button type="button" class="toggle-btn" onclick="selectRecorder('아빠')">아빠</button>
+                        <button type="button" class="toggle-btn" onclick="selectRecorder('딸')">딸</button>
+                    </div>
+                    <input type="hidden" id="recordRecorder" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">메모 (선택)</label>
+                    <textarea class="form-input" id="recordMemo" rows="3" placeholder="특이사항을 기록해주세요"></textarea>
+                </div>
+                
+                <button type="button" class="btn btn-primary" onclick="handleSubmit()">저장하기</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // 전역 변수
+        var records = [];
+        var currentChart = null;
+        var currentChartPeriod = 7;
+
+        // 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            loadRecords();
+            initTabs();
+            setDefaultDateTime();
+            renderAll();
+            updateQuickStats();
+        });
+
+        // localStorage에서 데이터 불러오기
+        function loadRecords() {
+            try {
+                var saved = localStorage.getItem('mongiDiabetesRecords');
+                if (saved) {
+                    records = JSON.parse(saved);
+                    console.log('✅ 데이터 불러오기 성공:', records.length + '개 기록');
+                } else {
+                    records = [];
+                    console.log('ℹ️ 저장된 기록 없음 (처음 사용)');
+                }
+            } catch (error) {
+                console.error('❌ 데이터 로드 실패:', error);
+                alert('⚠️ 브라우저의 시크릿/프라이빗 모드에서는 데이터 저장이 제한됩니다.\n일반 모드로 브라우저를 열어주세요.');
+                records = [];
+            }
+        }
+
+        // 탭 전환
+        function initTabs() {
+            var tabs = document.querySelectorAll('.tab-btn');
+            tabs.forEach(function(tab) {
+                tab.addEventListener('click', function() {
+                    var targetTab = tab.dataset.tab;
+                    
+                    tabs.forEach(function(t) { t.classList.remove('active'); });
+                    tab.classList.add('active');
+                    
+                    document.querySelectorAll('.tab-content').forEach(function(content) {
+                        content.classList.remove('active');
+                    });
+                    document.getElementById(targetTab).classList.add('active');
+                    
+                    if (targetTab === 'dashboard') {
+                        renderChart();
+                    }
+                });
+            });
+        }
+
+        // 기본 날짜/시간 설정
+        function setDefaultDateTime() {
+            var now = new Date();
+            var dateStr = now.toISOString().split('T')[0];
+            var timeStr = now.toTimeString().split(' ')[0].substring(0, 5);
+            
+            document.getElementById('recordDate').value = dateStr;
+            document.getElementById('recordTime').value = timeStr;
+        }
+
+        // 숫자 증가
+        function increaseValue(inputId, step) {
+            var input = document.getElementById(inputId);
+            var currentValue = parseFloat(input.value) || 0;
+            input.value = currentValue + step;
+        }
+
+        // 숫자 감소
+        function decreaseValue(inputId, step) {
+            var input = document.getElementById(inputId);
+            var currentValue = parseFloat(input.value) || 0;
+            var newValue = currentValue - step;
+            input.value = newValue >= 0 ? newValue : 0;
+        }
+
+        // 빠른 값 설정
+        function setQuickValue(inputId, value) {
+            document.getElementById(inputId).value = value;
+        }
+
+        // 모달 열기
+        function openModal(type) {
+            var modal = document.getElementById('recordModal');
+            
+            // 입력 필드 초기화
+            document.getElementById('editId').value = '';
+            document.getElementById('recordType').value = type;
+            document.getElementById('recordRecorder').value = '';
+            document.getElementById('recordMemo').value = '';
+            
+            // 기록자 버튼 초기화
+            document.querySelectorAll('.toggle-btn').forEach(function(btn) {
+                btn.classList.remove('active');
+            });
+            
+            setDefaultDateTime();
+            
+            document.getElementById('bloodValueGroup').style.display = 'none';
+            document.getElementById('insulinValueGroup').style.display = 'none';
+            document.getElementById('foodValueGroup').style.display = 'none';
+            document.getElementById('waterValueGroup').style.display = 'none';
+            
+            var titles = {
+                blood: '💉 혈당 기록',
+                insulin: '💊 인슐린 기록',
+                food: '🍖 사료 기록',
+                water: '💧 물 섭취 기록'
+            };
+            
+            document.getElementById('modalTitle').textContent = titles[type];
+            
+            if (type === 'blood') {
+                document.getElementById('bloodValueGroup').style.display = 'block';
+                document.getElementById('bloodValue').value = 100;
+            } else if (type === 'insulin') {
+                document.getElementById('insulinValueGroup').style.display = 'block';
+                document.getElementById('insulinValue').value = 7;
+            } else if (type === 'food') {
+                document.getElementById('foodValueGroup').style.display = 'block';
+                document.getElementById('foodValue').value = 100;
+            } else if (type === 'water') {
+                document.getElementById('waterValueGroup').style.display = 'block';
+                document.getElementById('waterValue').value = 200;
+            }
+            
+            modal.classList.add('active');
+        }
+
+        // 모달 닫기
+        function closeModal() {
+            document.getElementById('recordModal').classList.remove('active');
+        }
+
+        // 기록자 선택
+        function selectRecorder(name) {
+            document.querySelectorAll('.toggle-btn').forEach(function(btn) {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            document.getElementById('recordRecorder').value = name;
+        }
+
+        // 폼 제출
+        function handleSubmit() {
+            var type = document.getElementById('recordType').value;
+            var editId = document.getElementById('editId').value;
+            var date = document.getElementById('recordDate').value;
+            var time = document.getElementById('recordTime').value;
+            var recorder = document.getElementById('recordRecorder').value;
+            var memo = document.getElementById('recordMemo').value;
+            
+            // 필수 항목 체크
+            if (!date) {
+                alert('날짜를 입력해주세요');
+                return;
+            }
+            
+            if (!time) {
+                alert('시간을 입력해주세요');
+                return;
+            }
+            
+            if (!recorder) {
+                alert('기록자를 선택해주세요');
+                return;
+            }
+            
+            var value;
+            if (type === 'blood') {
+                value = parseFloat(document.getElementById('bloodValue').value);
+            } else if (type === 'insulin') {
+                value = parseFloat(document.getElementById('insulinValue').value);
+            } else if (type === 'food') {
+                value = parseFloat(document.getElementById('foodValue').value);
+            } else if (type === 'water') {
+                value = parseFloat(document.getElementById('waterValue').value);
+            }
+            
+            if (!value || value <= 0) {
+                alert('값을 입력해주세요');
+                return;
+            }
+            
+            var record = {
+                id: editId || Date.now().toString(),
+                type: type,
+                date: date,
+                time: time,
+                value: value,
+                recorder: recorder,
+                memo: memo,
+                timestamp: new Date(date + 'T' + time).getTime()
+            };
+            
+            if (editId) {
+                var index = records.findIndex(function(r) { return r.id === editId; });
+                if (index !== -1) {
+                    records[index] = record;
+                }
+            } else {
+                records.push(record);
+            }
+            
+            console.log('💾 저장 시도:', record);
+            
+            if (saveRecords()) {
+                console.log('✅ 저장 완료 - 화면 업데이트 중');
+                renderAll();
+                updateQuickStats();
+                closeModal();
+                showNotification('✅ 저장 완료!');
+            } else {
+                console.log('❌ 저장 실패');
+            }
+        }
+
+        // 기록 수정
+        function editRecord(id) {
+            var record = records.find(function(r) { return r.id === id; });
+            if (!record) return;
+            
+            openModal(record.type);
+            
+            document.getElementById('editId').value = record.id;
+            document.getElementById('recordDate').value = record.date;
+            document.getElementById('recordTime').value = record.time;
+            document.getElementById('recordRecorder').value = record.recorder;
+            document.getElementById('recordMemo').value = record.memo || '';
+            
+            document.querySelectorAll('.toggle-btn').forEach(function(btn) {
+                if (btn.textContent === record.recorder) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            if (record.type === 'blood') {
+                document.getElementById('bloodValue').value = record.value;
+            } else if (record.type === 'insulin') {
+                document.getElementById('insulinValue').value = record.value;
+            } else if (record.type === 'food') {
+                document.getElementById('foodValue').value = record.value;
+            } else if (record.type === 'water') {
+                document.getElementById('waterValue').value = record.value;
+            }
+        }
+
+        // 기록 삭제
+        function deleteRecord(id) {
+            if (confirm('정말 삭제하시겠습니까?')) {
+                records = records.filter(function(r) { return r.id !== id; });
+                if (saveRecords()) {
+                    renderAll();
+                    updateQuickStats();
+                    showNotification('🗑️ 삭제되었습니다');
+                }
+            }
+        }
+
+        // 저장
+        function saveRecords() {
+            try {
+                var dataString = JSON.stringify(records);
+                localStorage.setItem('mongiDiabetesRecords', dataString);
+                
+                // 저장 확인
+                var verification = localStorage.getItem('mongiDiabetesRecords');
+                if (verification === dataString) {
+                    console.log('✅ 저장 성공:', records.length + '개 기록');
+                    return true;
+                } else {
+                    throw new Error('저장 검증 실패');
+                }
+            } catch (error) {
+                console.error('❌ 저장 실패:', error);
+                alert('저장에 실패했습니다.\n\n⚠️ 브라우저의 시크릿/프라이빗 모드에서는 저장이 제한됩니다.\n일반 모드로 다시 열어주세요.');
+                return false;
+            }
+        }
+
+        // 알림 표시
+        function showNotification(message) {
+            var existing = document.getElementById('saveNotification');
+            if (existing) existing.remove();
+            
+            var notification = document.createElement('div');
+            notification.id = 'saveNotification';
+            notification.textContent = message;
+            notification.style.cssText = 
+                'position: fixed;' +
+                'bottom: 100px;' +
+                'left: 50%;' +
+                'transform: translateX(-50%);' +
+                'background: var(--success);' +
+                'color: white;' +
+                'padding: 12px 24px;' +
+                'border-radius: 25px;' +
+                'font-weight: 600;' +
+                'box-shadow: 0 4px 12px rgba(0,0,0,0.2);' +
+                'z-index: 10000;' +
+                'animation: slideUp 0.3s ease-out;';
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(function() {
+                notification.style.animation = 'slideDown 0.3s ease-in';
+                setTimeout(function() { notification.remove(); }, 300);
+            }, 2000);
+        }
+
+        // 필터링된 기록 가져오기
+        function getFilteredRecords(type) {
+            var selectedFamily = document.getElementById('familySelector').value;
+            var filtered = records;
+            
+            if (selectedFamily !== 'all') {
+                filtered = filtered.filter(function(r) { return r.recorder === selectedFamily; });
+            }
+            
+            if (type) {
+                filtered = filtered.filter(function(r) { return r.type === type; });
+            }
+            
+            return filtered.sort(function(a, b) { return b.timestamp - a.timestamp; });
+        }
+
+        // 모든 목록 렌더링
+        function renderAll() {
+            renderRecordsList('blood', 'bloodRecordsList');
+            renderRecordsList('insulin', 'insulinRecordsList');
+            renderRecordsList('food', 'foodRecordsList');
+            renderRecordsList('water', 'waterRecordsList');
+            renderTodayRecords();
+            renderChart();
+        }
+
+        // 기록 목록 렌더링
+        function renderRecordsList(type, elementId) {
+            var container = document.getElementById(elementId);
+            var filtered = getFilteredRecords(type);
+            
+            if (filtered.length === 0) {
+                container.innerHTML = 
+                    '<div class="empty-state">' +
+                    '<div class="empty-icon">📝</div>' +
+                    '<p>아직 기록이 없습니다</p>' +
+                    '</div>';
+                return;
+            }
+            
+            var units = {
+                blood: 'mg/dL',
+                insulin: '단위',
+                food: 'g',
+                water: 'ml'
+            };
+            
+            var colors = {
+                '엄마': '#FF6BB3',
+                '아빠': '#3498DB',
+                '딸': '#FF9F43'
+            };
+            
+            var html = '';
+            filtered.forEach(function(record) {
+                var levelClass = '';
+                var levelText = '';
+                
+                if (type === 'blood') {
+                    if (record.value < 80) {
+                        levelClass = 'level-low';
+                        levelText = '낮음';
+                    } else if (record.value > 150) {
+                        levelClass = 'level-high';
+                        levelText = '높음';
+                    } else {
+                        levelClass = 'level-normal';
+                        levelText = '정상';
+                    }
+                }
+                
+                html += '<div class="card record-item">' +
+                    '<div class="record-info">' +
+                    '<div class="record-time">' +
+                    record.date + ' ' + record.time +
+                    '<span class="family-badge" style="background: ' + colors[record.recorder] + '22; color: ' + colors[record.recorder] + '">' +
+                    record.recorder +
+                    '</span>' +
+                    '</div>' +
+                    '<div class="record-value">' +
+                    record.value + ' ' + units[type];
+                
+                if (type === 'blood' && levelClass) {
+                    html += '<span class="blood-level ' + levelClass + '">' + levelText + '</span>';
+                }
+                
+                html += '</div>';
+                
+                if (record.memo) {
+                    html += '<div style="font-size: 13px; color: var(--text-light); margin-top: 5px;">' + record.memo + '</div>';
+                }
+                
+                html += '</div>' +
+                    '<div class="record-actions">' +
+                    '<button class="btn-icon btn-edit" onclick="editRecord(\'' + record.id + '\')">✏️</button>' +
+                    '<button class="btn-icon btn-delete" onclick="deleteRecord(\'' + record.id + '\')">🗑️</button>' +
+                    '</div>' +
+                    '</div>';
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // 오늘 기록 렌더링
+        function renderTodayRecords() {
+            var container = document.getElementById('todayRecordsList');
+            var today = new Date().toISOString().split('T')[0];
+            var todayRecords = getFilteredRecords().filter(function(r) { return r.date === today; });
+            
+            if (todayRecords.length === 0) {
+                container.innerHTML = 
+                    '<div class="empty-state">' +
+                    '<div class="empty-icon">📝</div>' +
+                    '<p>오늘 기록이 없습니다</p>' +
+                    '</div>';
+                return;
+            }
+            
+            var typeNames = {
+                blood: '💉 혈당',
+                insulin: '💊 인슐린',
+                food: '🍖 사료',
+                water: '💧 물'
+            };
+            
+            var units = {
+                blood: 'mg/dL',
+                insulin: '단위',
+                food: 'g',
+                water: 'ml'
+            };
+            
+            var html = '';
+            todayRecords.forEach(function(record) {
+                html += '<div class="record-item">' +
+                    '<div class="record-info">' +
+                    '<div class="record-time">' + typeNames[record.type] + ' • ' + record.time + ' • ' + record.recorder + '</div>' +
+                    '<div class="record-value">' + record.value + ' ' + units[record.type] + '</div>' +
+                    '</div>' +
+                    '</div>';
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // 차트 렌더링
+        function renderChart() {
+            var canvas = document.getElementById('bloodChart');
+            if (!canvas) return;
+            
+            var ctx = canvas.getContext('2d');
+            
+            if (currentChart) {
+                currentChart.destroy();
+            }
+            
+            var bloodRecords = getFilteredRecords('blood');
+            var days = [];
+            var today = new Date();
+            
+            for (var i = currentChartPeriod - 1; i >= 0; i--) {
+                var date = new Date(today);
+                date.setDate(date.getDate() - i);
+                days.push(date.toISOString().split('T')[0]);
+            }
+            
+            var chartData = days.map(function(date) {
+                var dayRecords = bloodRecords.filter(function(r) { return r.date === date; });
+                if (dayRecords.length === 0) return null;
+                return dayRecords.reduce(function(sum, r) { return sum + r.value; }, 0) / dayRecords.length;
+            });
+            
+            currentChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: days.map(function(date) {
+                        var d = new Date(date);
+                        return (d.getMonth() + 1) + '/' + d.getDate();
+                    }),
+                    datasets: [{
+                        label: '평균 혈당',
+                        data: chartData,
+                        borderColor: '#FF6BB3',
+                        backgroundColor: 'rgba(255, 107, 179, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: currentChartPeriod === 7 ? 5 : 3,
+                        pointBackgroundColor: '#FF6BB3',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleFont: {
+                                size: 14,
+                                weight: '600'
+                            },
+                            bodyFont: {
+                                size: 13
+                            },
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y ? context.parsed.y.toFixed(1) + ' mg/dL' : '기록 없음';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 60,
+                            max: 200,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '';
+                                },
+                                font: {
+                                    size: 11
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                font: {
+                                    size: currentChartPeriod === 7 ? 11 : 9
+                                },
+                                maxRotation: currentChartPeriod === 30 ? 45 : 0,
+                                minRotation: currentChartPeriod === 30 ? 45 : 0
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 차트 기간 변경
+        function changeChartPeriod(period) {
+            currentChartPeriod = period;
+            
+            document.querySelectorAll('.chart-period-btn').forEach(function(btn) {
+                btn.classList.remove('active');
+                if (parseInt(btn.dataset.period) === period) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            renderChart();
+        }
+
+        // 퀵 통계 업데이트
+        function updateQuickStats() {
+            var today = new Date().toISOString().split('T')[0];
+            var todayRecords = getFilteredRecords().filter(function(r) { return r.date === today; });
+            
+            var todayBlood = todayRecords.filter(function(r) { return r.type === 'blood'; });
+            if (todayBlood.length > 0) {
+                var avg = todayBlood.reduce(function(sum, r) { return sum + r.value; }, 0) / todayBlood.length;
+                document.getElementById('todayAvgBlood').textContent = Math.round(avg);
+            } else {
+                document.getElementById('todayAvgBlood').textContent = '-';
+            }
+            
+            var todayInsulin = todayRecords.filter(function(r) { return r.type === 'insulin'; });
+            if (todayInsulin.length > 0) {
+                var total = todayInsulin.reduce(function(sum, r) { return sum + r.value; }, 0);
+                document.getElementById('todayInsulin').textContent = total;
+            } else {
+                document.getElementById('todayInsulin').textContent = '-';
+            }
+            
+            document.getElementById('todayRecords').textContent = todayRecords.length;
+        }
+
+        // 가족 필터 변경
+        document.getElementById('familySelector').addEventListener('change', function() {
+            renderAll();
+            updateQuickStats();
+        });
+    </script>
+</body>
+</html>
