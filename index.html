@@ -686,13 +686,13 @@
                     <label class="form-label">사료 급여량 (g)</label>
                     <div class="number-input-group">
                         <button type="button" class="btn-number" onclick="decreaseValue('foodValue', 10)">-</button>
-                        <input type="number" class="form-input" id="foodValue" min="0" step="10" value="100">
+                        <input type="number" class="form-input" id="foodValue" min="0" step="10" value="150">
                         <button type="button" class="btn-number" onclick="increaseValue('foodValue', 10)">+</button>
                     </div>
                     <div class="quick-value-buttons">
-                        <button type="button" class="btn-quick" onclick="setQuickValue('foodValue', 100)">100g</button>
                         <button type="button" class="btn-quick" onclick="setQuickValue('foodValue', 150)">150g</button>
                         <button type="button" class="btn-quick" onclick="setQuickValue('foodValue', 200)">200g</button>
+                        <button type="button" class="btn-quick" onclick="setQuickValue('foodValue', 250)">250g</button>
                         <button type="button" class="btn-quick" onclick="setQuickValue('foodValue', 300)">300g</button>
                     </div>
                 </div>
@@ -700,14 +700,14 @@
                     <label class="form-label">물 섭취량 (ml)</label>
                     <div class="number-input-group">
                         <button type="button" class="btn-number" onclick="decreaseValue('waterValue', 50)">-</button>
-                        <input type="number" class="form-input" id="waterValue" min="0" step="50" value="200">
+                        <input type="number" class="form-input" id="waterValue" min="0" step="50" value="150">
                         <button type="button" class="btn-number" onclick="increaseValue('waterValue', 50)">+</button>
                     </div>
                     <div class="quick-value-buttons">
-                        <button type="button" class="btn-quick" onclick="setQuickValue('waterValue', 100)">100ml</button>
+                        <button type="button" class="btn-quick" onclick="setQuickValue('waterValue', 150)">150ml</button>
                         <button type="button" class="btn-quick" onclick="setQuickValue('waterValue', 200)">200ml</button>
+                        <button type="button" class="btn-quick" onclick="setQuickValue('waterValue', 250)">250ml</button>
                         <button type="button" class="btn-quick" onclick="setQuickValue('waterValue', 300)">300ml</button>
-                        <button type="button" class="btn-quick" onclick="setQuickValue('waterValue', 500)">500ml</button>
                     </div>
                 </div>
                 <div class="form-group">
@@ -770,7 +770,7 @@
                     });
                     document.getElementById(targetTab).classList.add('active');
                     if (targetTab === 'dashboard') {
-                        renderChart();
+                        setTimeout(renderChart, 100);
                     }
                 });
             });
@@ -825,10 +825,10 @@
                 document.getElementById('insulinValue').value = 7;
             } else if (type === 'food') {
                 document.getElementById('foodValueGroup').style.display = 'block';
-                document.getElementById('foodValue').value = 100;
+                document.getElementById('foodValue').value = 150;
             } else if (type === 'water') {
                 document.getElementById('waterValueGroup').style.display = 'block';
-                document.getElementById('waterValue').value = 200;
+                document.getElementById('waterValue').value = 150;
             }
             document.getElementById('recordModal').classList.add('active');
         }
@@ -1034,50 +1034,72 @@
             var canvas = document.getElementById('bloodChart');
             if (!canvas) return;
             var ctx = canvas.getContext('2d');
-            if (currentChart) currentChart.destroy();
             
-            var bloodRecords = getFilteredRecords('blood');
-            var days = [];
-            var today = new Date();
-            for (var i = currentChartPeriod - 1; i >= 0; i--) {
-                var date = new Date(today);
-                date.setDate(date.getDate() - i);
-                days.push(date.toISOString().split('T')[0]);
+            if (currentChart) {
+                currentChart.destroy();
+                currentChart = null;
             }
             
-            var chartData = days.map(function(date) {
-                var dayRecords = bloodRecords.filter(function(r) { return r.date === date; });
-                if (dayRecords.length === 0) return null;
-                return dayRecords.reduce(function(sum, r) { return sum + r.value; }, 0) / dayRecords.length;
+            var bloodRecords = getFilteredRecords('blood');
+            console.log('📊 그래프 렌더링 - 혈당 기록:', bloodRecords.length + '개');
+            
+            // 최근 기간의 모든 혈당 기록 가져오기
+            var cutoffDate = new Date();
+            cutoffDate.setDate(cutoffDate.getDate() - currentChartPeriod);
+            
+            var recentRecords = bloodRecords.filter(function(r) {
+                var recordDate = new Date(r.date + 'T' + r.time);
+                return recordDate >= cutoffDate;
+            }).sort(function(a, b) {
+                return a.timestamp - b.timestamp;
             });
             
-            var validData = chartData.filter(function(v) { return v !== null; });
-            var minValue = validData.length > 0 ? Math.min.apply(null, validData) : 80;
-            var maxValue = validData.length > 0 ? Math.max.apply(null, validData) : 300;
-            var padding = (maxValue - minValue) * 0.2;
+            console.log('📊 기간 내 기록:', recentRecords.length + '개');
+            
+            if (recentRecords.length === 0) {
+                console.log('⚠️ 표시할 기록 없음');
+                return;
+            }
+            
+            // 레이블과 데이터 생성
+            var labels = recentRecords.map(function(r) {
+                var d = new Date(r.date);
+                var timeStr = r.time.substring(0, 5); // HH:MM
+                return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + timeStr;
+            });
+            
+            var chartData = recentRecords.map(function(r) {
+                return r.value;
+            });
+            
+            console.log('📊 차트 데이터:', chartData);
+            
+            // Y축 범위 계산
+            var minValue = Math.min.apply(null, chartData);
+            var maxValue = Math.max.apply(null, chartData);
+            var padding = Math.max((maxValue - minValue) * 0.2, 20);
             var yMin = Math.max(0, Math.floor(minValue - padding));
             var yMax = Math.ceil(maxValue + padding);
+            
+            console.log('📊 Y축 범위:', yMin, '~', yMax);
             
             currentChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: days.map(function(date) {
-                        var d = new Date(date);
-                        return (d.getMonth() + 1) + '/' + d.getDate();
-                    }),
+                    labels: labels,
                     datasets: [{
-                        label: '평균 혈당',
+                        label: '혈당',
                         data: chartData,
                         borderColor: '#FF6BB3',
                         backgroundColor: 'rgba(255, 107, 179, 0.1)',
                         borderWidth: 3,
                         tension: 0.4,
                         fill: true,
-                        spanGaps: true,
-                        pointRadius: currentChartPeriod === 7 ? 5 : 3,
+                        pointRadius: 5,
                         pointBackgroundColor: '#FF6BB3',
                         pointBorderColor: '#fff',
-                        pointBorderWidth: 2
+                        pointBorderWidth: 2,
+                        pointHoverRadius: 7
                     }]
                 },
                 options: {
@@ -1092,7 +1114,11 @@
                             bodyFont: { size: 13 },
                             callbacks: {
                                 label: function(context) {
-                                    return context.parsed.y ? context.parsed.y.toFixed(1) + ' mg/dL' : '기록 없음';
+                                    var record = recentRecords[context.dataIndex];
+                                    return [
+                                        context.parsed.y + ' mg/dL',
+                                        '기록자: ' + record.recorder
+                                    ];
                                 }
                             }
                         }
@@ -1110,15 +1136,17 @@
                         },
                         x: {
                             ticks: {
-                                font: { size: currentChartPeriod === 7 ? 11 : 9 },
-                                maxRotation: currentChartPeriod === 30 ? 45 : 0,
-                                minRotation: currentChartPeriod === 30 ? 45 : 0
+                                font: { size: currentChartPeriod === 7 ? 10 : 8 },
+                                maxRotation: 45,
+                                minRotation: 45
                             },
                             grid: { display: false }
                         }
                     }
                 }
             });
+            
+            console.log('✅ 차트 생성 완료');
         }
 
         function changeChartPeriod(period) {
